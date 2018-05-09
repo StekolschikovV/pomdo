@@ -2,7 +2,7 @@ import React from 'react';
 import { StyleSheet, Text, View, Image, TouchableHighlight } from 'react-native';
 import Time from './time';
 import Constants from '../../constants.json';
-// import play_icons from './../../../assets/icons/play.png';
+import KeepAwake from 'react-native-keep-awake';
 import {inject, observer} from "mobx-react/native";
 
 @inject('store') @observer
@@ -10,6 +10,10 @@ export default class Timer extends React.Component {
 
   constructor(props) {
     super(props);
+  }
+
+  changeKeepAwake = () =>{
+    this.state.keepawake = true;
   }
 
   render() {
@@ -33,6 +37,5 @@ export default class Timer extends React.Component {
       </View>
     );
   }
+
 }
-
-
