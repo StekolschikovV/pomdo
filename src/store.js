@@ -2,11 +2,12 @@ import {observable, action} from 'mobx'
 
 class Store 
 {
+    @observable screenIndex = 0;
 
     // --- timer
     @observable timerStatus = false;
     @observable timerTime = 1500;
-    @action timerStatusToggler() 
+    @action timerStatusToggler()
     {
         this.timerStatus = !this.timerStatus;
         this.timerLoop();

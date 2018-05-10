@@ -1,6 +1,7 @@
 {
     "color": {
         "active": "#C6C5C5",
+        "passive": "#6B6B6B",
         "bg": "#131313"
     },
     "size": {
