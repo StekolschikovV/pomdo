@@ -6,15 +6,6 @@ import Task from './task'
 import Constants from './../constants.json';
 import {inject, observer} from "mobx-react/native";
 
-class TitleText extends React.Component {
-    render() {
-        return (
-            <Text style={{fontSize: 48, color: 'white', backgroundColor: 'red'}}>
-                {this.props.label}
-            </Text>
-        )
-    }
-}
 
 @inject('store') @observer
 export default class Screens extends React.Component {
@@ -26,11 +17,11 @@ export default class Screens extends React.Component {
     changeIndex(newIndex) {
         if (newIndex !== this.props.store.screenIndex) {
             if (newIndex < this.props.store.screenIndex) {
-                this._swiper.scrollBy(-1, true)
                 this.props.store.screenIndex = this.props.store.screenIndex - 1;
+                this._swiper.scrollBy(-1, true)
             } else {
-                this._swiper.scrollBy(1, true)
                 this.props.store.screenIndex = this.props.store.screenIndex + 1;
+                this._swiper.scrollBy(1, true)
             }
             setTimeout(() => {
                 this.changeIndex(newIndex);
@@ -57,8 +48,9 @@ export default class Screens extends React.Component {
                             ]} onPress={() => this.changeIndex(0)}>
                         <Text style={{color: SI !== 0 ? bg : passive}}>Task</Text>
                     </TouchableHighlight>
-                    <TouchableHighlight style={[styles.menuBtn, styles.menuBtnRight, [{backgroundColor: SI == 1 ? bg : passive}]]}
-                                        onPress={() => this.changeIndex(1)}>
+                    <TouchableHighlight
+                        style={[styles.menuBtn, styles.menuBtnRight, [{backgroundColor: SI == 1 ? bg : passive}]]}
+                        onPress={() => this.changeIndex(1)}>
                         <Text style={{color: SI !== 1 ? bg : passive}}>Timer</Text>
                     </TouchableHighlight>
                 </View>
@@ -70,9 +62,6 @@ export default class Screens extends React.Component {
                         loop={false}
                         showsPagination={false}
                         index={0}>
-                        {/*<View>*/}
-                            {/*<TitleText label="1"/>*/}
-                        {/*</View>*/}
                         <Task/>
                         <Timer/>
                     </Swiper>

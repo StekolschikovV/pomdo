@@ -1,15 +1,20 @@
-import React, { Component } from 'react';
+import React, {Component} from 'react';
 import {
     Animated,
     Easing,
     StyleSheet,
     Text,
-    Image,
+    Keyboard,
     View,
     Dimensions,
     Platform,
+    TextInput,
+    ScrollView,
 } from 'react-native';
 import SortableList from 'react-native-sortable-list';
+import Constants from './../../constants';
+import CheckBox from 'react-native-check-box';
+import simpleStore from 'react-native-simple-store';
 
 const window = Dimensions.get('window');
 
@@ -19,49 +24,116 @@ export default class Task extends Component {
         super(props);
 
         this.state = {
+            foo: '',
+            scrollEnabled: true,
+            scrollMap: null,
+            text: '',
             data: [
                 {
-                    image: 'https://placekitten.com/200/240',
-                    text: 'Chloe1',
-                },
-                {
-                    image: 'https://placekitten.com/200/240',
-                    text: 'Chloe2',
+                    text: 'test'
                 }
             ]
         }
 
-        setInterval(() => {
-            let d= this.state.data;
-            d.push({
-                image: 'https://placekitten.com/200/240',
-                text: 'Chloe3',
-            })
-            this.setState({
-                data: d
-            })
-        }, 1500)
+        this.onChangeText = this.onChangeText.bind(this);
+        this.scrollEnabled = this.scrollEnabled.bind(this);
+        this.rmTask = this.rmTask.bind(this);
+        this.savePosition = this.savePosition.bind(this);
 
+    }
+
+    componentDidMount() {
+        this.keyboardDidHideListener = Keyboard.addListener('keyboardDidHide', this._keyboardDidHide.bind(this));
+
+        simpleStore.get('data').then((data) => {
+            this.setState({data:JSON.parse(data)})
+        });
+    }
+
+
+    _keyboardDidHide() {
+        if (this.state.text.length > 0) {
+            let d = this.state.data;
+            const newRecord = {text: this.state.text};
+            this.setState({data: [newRecord, ...d]});
+            this.setState({text: ''});
+            this.savePosition();
+        }
+    }
+
+    onChangeText(text) {
+        this.setState({text});
+    }
+
+    rmTask(text) {
+        const result = this.state.data.filter(obj => obj.text !== text);
+        this.setState({data: result});
+        this.savePosition();
+    }
+
+    savePosition() {
+
+        setTimeout(()=>{
+
+            if(this.state.scrollMap){
+
+                let SM = this.state.scrollMap;
+                let res = [];
+
+                for(let i = 0; i < SM.length; i++) {
+                    SM[i]
+                    res.push(this.state.data[SM[i]])
+                }
+
+                simpleStore.delete('data');
+                simpleStore.update('data', JSON.stringify(res));
+
+            } else {
+                simpleStore.delete('data');
+                simpleStore.update('data', JSON.stringify(this.state.data));
+            }
+        },0)
     }
 
     render() {
 
         return (
             <View style={styles.container}>
-                {/*<Text style={styles.title}>React Native Sortable List</Text>*/}
-                <SortableList
-                    style={styles.list}
-                    contentContainerStyle={styles.contentContainer}
-                    data={this.state.data}
-                    renderRow={this._renderRow} />
+
+                <ScrollView scrollEnabled={this.state.scrollEnabled}>
+
+                    <TextInput
+                        underlineColorAndroid='transparent'
+                        autoCorrect={false}
+                        style={styles.input}
+                        placeholder={'+ enter new task...'}
+                        onChangeText={(text) => this.onChangeText(text)}
+                        value={this.state.text}/>
+
+                    <SortableList
+                        scrollEnabled={false}
+                        onChangeOrder={(scrollMap)=>this.setState({scrollMap})}
+                        style={styles.list}
+                        contentContainerStyle={styles.contentContainer}
+                        data={this.state.data}
+                        renderRow={this._renderRow}/>
+
+                </ScrollView>
+
             </View>
         );
     }
 
-    _renderRow = ({data, active}) => {
-        console.log({data, active})
-        return <Row data={data} active={active} />
+    scrollEnabled() {
+        this.setState({
+            scrollEnabled: !this.state.scrollEnabled
+        })
     }
+
+    _renderRow = ({data, active}) => {
+        return <Row savePosition={this.savePosition} rmTask={this.rmTask} scrollEnabled={this.scrollEnabled} data={data} active={active}/>
+    }
+
 }
 
 class Row extends Component {
@@ -70,6 +142,7 @@ class Row extends Component {
         super(props);
 
         this._active = new Animated.Value(0);
+        this.onCheck = this.onCheck.bind(this);
 
         this._style = {
             ...Platform.select({
@@ -86,7 +159,6 @@ class Row extends Component {
                     }),
                 },
 
-
                 android: {
                     transform: [{
                         scale: this._active.interpolate({
@@ -101,6 +173,10 @@ class Row extends Component {
                 },
             })
         };
+
+        this.state = {
+            scroll: false
+        }
     }
 
     componentWillReceiveProps(nextProps) {
@@ -110,36 +186,63 @@ class Row extends Component {
                 easing: Easing.bounce,
                 toValue: Number(nextProps.active),
             }).start();
+            this.props.scrollEnabled()
+            // // console.log(nextProps.active)
+            if(!nextProps.active) {
+                this.props.savePosition();
+            }
         }
+    }
+
+    onCheck(data) {
+        this.props.rmTask(data.text);
     }
 
     render() {
         const {data, active} = this.props;
 
         return (
-            <Animated.View style={[
-                styles.row,
-                this._style,
-            ]}>
-                <Image source={{uri: data.image}} style={styles.image} />
+            <Animated.View
+                style={[
+                    styles.row,
+                    this._style,
+                ]}
+            >
+                <CheckBox
+                    style={{paddingRight: 5}}
+                    onClick={() => this.onCheck(data)}
+                />
                 <Text style={styles.text}>{data.text}</Text>
             </Animated.View>
         );
     }
 }
 
+
+
 const styles = StyleSheet.create({
     container: {
         flex: 1,
         justifyContent: 'center',
         alignItems: 'center',
-        backgroundColor: '#eee',
+        backgroundColor: Constants.color.bg,
 
         ...Platform.select({
             ios: {
                 paddingTop: 20,
             },
         }),
+    },
+
+
+    input: {
+        color: Constants.color.active,
+        width: window.width - 30,
+        marginHorizontal: 15,
+        padding: 10,
+        borderColor: Constants.color.passive,
+        // borderWidth: 1,
+        // underlineColorAndroid: 'rgba(0,0,0,0)'
     },
 
     title: {
@@ -153,33 +256,20 @@ const styles = StyleSheet.create({
     },
 
     contentContainer: {
-        // width: window.width,
         width: window.width,
         flex: 1,
-        flexDirection:'column',
-
-        // ...Platform.select({
-        //     ios: {
-        //         paddingHorizontal: 30,
-        //     },
-        //
-        //     android: {
-        //         paddingHorizontal: 0,
-        //     }
-        // })
+        flexDirection: 'column',
     },
 
     row: {
         flexDirection: 'row',
         alignItems: 'center',
-        backgroundColor: '#fff',
-        padding: 16,
-        height: 80,
+        backgroundColor: Constants.color.active,
+        padding: 10,
         flex: 1,
         marginTop: 7,
         marginBottom: 12,
-        borderRadius: 4,
-
+        borderRadius: 10,
         ...Platform.select({
             ios: {
                 width: window.width - 30 * 2,
@@ -190,22 +280,18 @@ const styles = StyleSheet.create({
             },
 
             android: {
-                width: window.width - 30 * 2,
+                width: window.width - 30,
                 elevation: 0,
-                marginHorizontal: 30,
+                marginHorizontal: 15,
             },
         })
-    },
 
-    image: {
-        width: 50,
-        height: 50,
-        marginRight: 30,
-        borderRadius: 25,
+
     },
 
     text: {
         fontSize: 24,
-        color: '#222222',
+        color: Constants.color.bg,
     },
+
 });

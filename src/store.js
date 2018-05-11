@@ -1,12 +1,17 @@
 import {observable, action} from 'mobx'
 
+const REST_TIME = 300;
+const WORK_TIME = 1500;
+
 class Store 
 {
+
     @observable screenIndex = 0;
 
     // --- timer
     @observable timerStatus = false;
-    @observable timerTime = 1500;
+    @observable timerIsWorkStatus = true;
+    @observable timerTime = WORK_TIME;
     @action timerStatusToggler()
     {
         this.timerStatus = !this.timerStatus;
@@ -14,7 +19,11 @@ class Store
     }
     @action timerRest() 
     {
-        this.timerTime = 1500;
+        this.timerTime = WORK_TIME;
+    }
+    @action timerRestToRest()
+    {
+        this.timerTime = REST_TIME;
     }
     @action timerLoop() 
     {
@@ -28,7 +37,15 @@ class Store
                     this.timerRest();
                 }
             } else {
-                this.timerRest();
+                if(this.timerIsWorkStatus){
+                    this.timerRestToRest();
+                    this.timerIsWorkStatus = false;
+                    this.timerLoop();
+                } else {
+                    this.timerRest();
+                    this.timerIsWorkStatus = true;
+                    this.timerStatus = false;
+                }
             }
         }, 1000);
     }
