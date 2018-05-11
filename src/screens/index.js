@@ -3,6 +3,7 @@ import Swiper from 'react-native-swiper'
 import {StyleSheet, Text, View, StatusBar, TouchableHighlight} from 'react-native';
 import Timer from './timer'
 import Task from './task'
+import { KeepAwake } from 'expo';
 import Constants from './../constants.json';
 import {inject, observer} from "mobx-react/native";
 
@@ -41,6 +42,7 @@ export default class Screens extends React.Component {
 
         return (
             <View style={styles.container}>
+                <KeepAwake />
                 <View style={styles.menuContainer}>
                     <TouchableHighlight
                         style={

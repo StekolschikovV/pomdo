@@ -47,6 +47,7 @@ export default class Task extends Component {
         this.keyboardDidHideListener = Keyboard.addListener('keyboardDidHide', this._keyboardDidHide.bind(this));
 
         simpleStore.get('data').then((data) => {
+            console.log(data)
             this.setState({data:JSON.parse(data)})
         });
     }
@@ -63,7 +64,7 @@ export default class Task extends Component {
     }
 
     onChangeText(text) {
-        if(text) {
+        if(text.trim()) {
             this.setState({text});
         }
     }
