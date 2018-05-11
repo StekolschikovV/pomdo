@@ -51,9 +51,14 @@ export default class Screens extends React.Component {
                         <Text style={{color: SI !== 0 ? bg : passive}}>Task</Text>
                     </TouchableHighlight>
                     <TouchableHighlight
-                        style={[styles.menuBtn, styles.menuBtnRight, [{backgroundColor: SI == 1 ? bg : passive}]]}
+                        style={[styles.menuBtn, [{backgroundColor: SI == 1 ? bg : passive}]]}
                         onPress={() => this.changeIndex(1)}>
                         <Text style={{color: SI !== 1 ? bg : passive}}>Timer</Text>
+                    </TouchableHighlight>
+                    <TouchableHighlight
+                        style={[styles.menuBtn, styles.menuBtnRight, [{backgroundColor: SI == 2 ? bg : passive}]]}
+                        onPress={() => this.changeIndex(2)}>
+                        <Text style={{color: SI !== 2 ? bg : passive}}>Statistics</Text>
                     </TouchableHighlight>
                 </View>
                 <View style={styles.containerContent}>
@@ -66,6 +71,9 @@ export default class Screens extends React.Component {
                         index={0}>
                         <Task/>
                         <Timer/>
+                        <View style={styles.containerContent}>
+                            <Text>1111</Text>
+                        </View>
                     </Swiper>
                 </View>
             </View>
