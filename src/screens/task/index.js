@@ -40,6 +40,7 @@ export default class Task extends Component {
         this.rmTask = this.rmTask.bind(this);
         this.savePosition = this.savePosition.bind(this);
 
+
     }
 
     componentDidMount() {
@@ -62,13 +63,18 @@ export default class Task extends Component {
     }
 
     onChangeText(text) {
-        this.setState({text});
+        if(text) {
+            this.setState({text});
+        }
     }
 
     rmTask(text) {
-        const result = this.state.data.filter(obj => obj.text !== text);
-        this.setState({data: result});
-        this.savePosition();
+        if(this.state.data){
+            const result = this.state.data.filter(obj => obj.text !== text && obj.text != '');
+            this.setState({data: result});
+            this.savePosition();
+        }
+
     }
 
     savePosition() {
@@ -99,6 +105,7 @@ export default class Task extends Component {
 
         return (
             <View style={styles.container}>
+
 
                 <ScrollView scrollEnabled={this.state.scrollEnabled}>
 
@@ -187,7 +194,6 @@ class Row extends Component {
                 toValue: Number(nextProps.active),
             }).start();
             this.props.scrollEnabled()
-            // // console.log(nextProps.active)
             if(!nextProps.active) {
                 this.props.savePosition();
             }
@@ -195,11 +201,21 @@ class Row extends Component {
     }
 
     onCheck(data) {
-        this.props.rmTask(data.text);
+        try {
+            this.props.rmTask(data.text);
+        } catch (e) {
+            console.log(e)
+        }
     }
 
     render() {
         const {data, active} = this.props;
+        let text = '';
+        if(!data)
+            text = ''
+        else
+            text = data.text
+
 
         return (
             <Animated.View
@@ -212,13 +228,11 @@ class Row extends Component {
                     style={{paddingRight: 5}}
                     onClick={() => this.onCheck(data)}
                 />
-                <Text style={styles.text}>{data.text}</Text>
+                <Text style={styles.text}>{text}</Text>
             </Animated.View>
         );
     }
 }
-
-
 
 const styles = StyleSheet.create({
     container: {
