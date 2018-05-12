@@ -30,28 +30,30 @@ export default class Task extends Component {
             text: '',
             data: [
                 {
-                    text: 'test'
+                    'text': 123
                 }
             ]
-        }
+        };
 
         this.onChangeText = this.onChangeText.bind(this);
         this.scrollEnabled = this.scrollEnabled.bind(this);
         this.rmTask = this.rmTask.bind(this);
         this.savePosition = this.savePosition.bind(this);
-
-
     }
 
     componentDidMount() {
         this.keyboardDidHideListener = Keyboard.addListener('keyboardDidHide', this._keyboardDidHide.bind(this));
 
         simpleStore.get('data').then((data) => {
-            console.log(data)
-            this.setState({data:JSON.parse(data)})
+            console.log(JSON.parse(data))
+            if (!data) {
+                this.setState({data: []});
+            }
+            else {
+                this.setState({data: JSON.parse(data)});
+            }
         });
     }
-
 
     _keyboardDidHide() {
         if (this.state.text.length > 0) {
@@ -64,30 +66,28 @@ export default class Task extends Component {
     }
 
     onChangeText(text) {
-        if(text.trim()) {
+        if (text.trim()) {
             this.setState({text});
         }
     }
 
     rmTask(text) {
-        if(this.state.data){
+        if (this.state.data) {
             const result = this.state.data.filter(obj => obj.text !== text && obj.text != '');
             this.setState({data: result});
             this.savePosition();
         }
-
     }
 
     savePosition() {
+        setTimeout(() => {
 
-        setTimeout(()=>{
-
-            if(this.state.scrollMap){
+            if (this.state.scrollMap) {
 
                 let SM = this.state.scrollMap;
                 let res = [];
 
-                for(let i = 0; i < SM.length; i++) {
+                for (let i = 0; i < SM.length; i++) {
                     SM[i]
                     res.push(this.state.data[SM[i]])
                 }
@@ -99,7 +99,7 @@ export default class Task extends Component {
                 simpleStore.delete('data');
                 simpleStore.update('data', JSON.stringify(this.state.data));
             }
-        },0)
+        }, 0)
     }
 
     render() {
@@ -120,7 +120,7 @@ export default class Task extends Component {
 
                     <SortableList
                         scrollEnabled={false}
-                        onChangeOrder={(scrollMap)=>this.setState({scrollMap})}
+                        // onChangeOrder={(scrollMap)=>this.setState({scrollMap})}
                         style={styles.list}
                         contentContainerStyle={styles.contentContainer}
                         data={this.state.data}
@@ -139,7 +139,8 @@ export default class Task extends Component {
     }
 
     _renderRow = ({data, active}) => {
-        return <Row savePosition={this.savePosition} rmTask={this.rmTask} scrollEnabled={this.scrollEnabled} data={data} active={active}/>
+        return <Row savePosition={this.savePosition} rmTask={this.rmTask} scrollEnabled={this.scrollEnabled} data={data}
+                    active={active}/>
     }
 
 }
@@ -195,7 +196,7 @@ class Row extends Component {
                 toValue: Number(nextProps.active),
             }).start();
             this.props.scrollEnabled()
-            if(!nextProps.active) {
+            if (!nextProps.active) {
                 this.props.savePosition();
             }
         }
@@ -205,6 +206,7 @@ class Row extends Component {
         try {
             this.props.rmTask(data.text);
         } catch (e) {
+            console.log('----------------------')
             console.log(e)
         }
     }
@@ -212,7 +214,7 @@ class Row extends Component {
     render() {
         const {data, active} = this.props;
         let text = '';
-        if(!data)
+        if (!data)
             text = ''
         else
             text = data.text
