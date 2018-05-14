@@ -55,7 +55,6 @@ export default class Task extends Component {
         });
     }
 
-    
     _keyboardDidHide() {
         if (this.state.text.length > 0) {
             let d = this.state.data;
